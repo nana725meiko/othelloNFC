@@ -3,194 +3,256 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>NFC オセロ対戦</title>
+  <title>Luxury Othello</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* --- CSS VARIABLES & RESET --- */
+    :root {
+      --bg-color: #111111;
+      --board-bg: #1a1a1a;
+      --cell-bg: #222222;
+      --grid-line: #333333;
+      --gold: #c5a059;
+      --black-piece-top: #111111;
+      --black-piece-bottom: #333333;
+      --white-piece-top: #eaeaea;
+      --white-piece-bottom: #a0a0a0;
+      --text-color: #e0e0e0;
+      --transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1); /* 3D flip用 */
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
-      background: #141b17;
-      color: #f4f6f5;
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 100vh;
-      padding: 16px;
-    }
-    header {
-      text-align: center;
-      margin-bottom: 12px;
-      width: 100%;
-      max-width: 420px;
-    }
-    h1 {
-      font-size: 1.25rem;
-      letter-spacing: 0.05em;
-      margin-bottom: 6px;
-    }
-    .badge-row {
-      display: flex;
       justify-content: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      font-size: 0.85rem;
-    }
-    .badge {
-      background: #233129;
-      border: 1px solid #354b3e;
-      padding: 4px 10px;
-      border-radius: 999px;
-    }
-    .status-box {
+      min-height: 100vh;
+      overflow: hidden;
+      position: fixed; /* スクロール防止 */
       width: 100%;
-      max-width: 420px;
-      background: #1d2822;
-      border: 1px solid #2e4036;
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 14px;
-      text-align: center;
     }
-    .turn-text {
-      font-size: 1.05rem;
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
-    .score-row {
-      display: flex;
-      justify-content: space-around;
-      font-size: 0.95rem;
-    }
-    .score-item {
+
+    /* --- HEADER & STATUS --- */
+    header { text-align: center; margin-bottom: 20px; }
+    h1 { font-size: 1.5rem; letter-spacing: 0.15em; color: var(--gold); margin-bottom: 8px; text-transform: uppercase; }
+    .status-bar {
+      background: var(--board-bg);
+      border: 1px solid var(--grid-line);
+      border-radius: 99px;
+      padding: 8px 20px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 15px;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
-    .mini-disc {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-    .mini-black { background: #111; border: 1px solid #666; }
-    .mini-white { background: #fff; border: 1px solid #ccc; }
+    .turn-indicator { font-weight: bold; display: flex; align-items: center; gap: 8px; }
+    .indicator-black { color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.8); }
+    .indicator-white { color: #aaa; }
+    .score { display: flex; gap: 15px; font-feature-settings: "tnum"; } /* 等幅フォント設定 */
 
-    /* 盤面 */
+    /* --- BOARD (Luxury Design) --- */
+    .board-container {
+      perspective: 1000px; /* 3D効果の視点 */
+      margin: 20px 0;
+      padding: 10px;
+      background: radial-gradient(circle at center, #333, #111);
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.7), inset 0 1px 1px rgba(255,255,255,0.1);
+    }
     .board {
-      width: 100%;
-      max-width: 420px;
+      width: 90vw;
+      max-width: 400px;
       aspect-ratio: 1 / 1;
-      background: #1b6b3a;
-      border: 4px solid #0e3d20;
-      border-radius: 8px;
+      background-color: var(--grid-line);
       display: grid;
       grid-template-columns: repeat(8, 1fr);
       grid-template-rows: repeat(8, 1fr);
-      gap: 2px;
-      padding: 4px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+      gap: 1px; /* グリッド線 */
+      border: 4px solid var(--grid-line);
+      border-radius: 8px;
+      overflow: hidden;
+      transform: rotateX(10deg); /* 盤面を少し傾ける */
+      transition: transform 0.3s ease;
     }
     .cell {
-      background: #228247;
-      border-radius: 3px;
+      background-color: var(--cell-bg);
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
       cursor: pointer;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
     }
-    .cell.valid::after {
-      content: "";
-      width: 28%;
-      height: 28%;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.35);
-    }
-    .disc {
-      width: 80%;
-      height: 80%;
-      border-radius: 50%;
-      transition: transform 0.2s ease;
-    }
-    .disc.black {
-      background: radial-gradient(circle at 30% 30%, #444, #0a0a0a);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.6);
-    }
-    .disc.white {
-      background: radial-gradient(circle at 30% 30%, #ffffff, #dcdcdc);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    /* グリッドの交点（天元など）に高級な装飾（オプション） */
+    .cell:nth-child(27)::after, .cell:nth-child(28)::after,
+    .cell:nth-child(35)::after, .cell:nth-child(36)::after {
+      content: ''; width: 4px; height: 4px; background: var(--gold); border-radius: 50%; position: absolute; opacity: 0.3;
     }
 
-    .controls {
-      margin-top: 16px;
+    /* --- PIECES (3D & Animation) --- */
+    .piece {
+      width: 85%;
+      height: 85%;
+      border-radius: 50%;
+      position: absolute;
+      transition: var(--transition);
+      transform-style: preserve-3d; /* 3D回転を維持 */
+      /* 初期配置用アニメーション */
+      animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    @keyframes pop-in { 0% { transform: scale(0) rotateZ(-180deg); } 100% { transform: scale(1) rotateZ(0); } }
+
+    /* 3Dフリップの仕組み */
+    .piece.is-black { transform: rotateY(180deg); } /* 黒が裏面（180度回転） */
+    .piece.is-white { transform: rotateY(0deg); }   /* 白が表面（0度回転） */
+
+    .piece-face {
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      position: absolute;
+      backface-visibility: hidden; /* 裏面を隠す */
+      box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+    }
+    /* Luxury Material */
+    .front { /* 白面 */
+      background: radial-gradient(circle at 30% 30%, var(--white-piece-top), var(--white-piece-bottom));
+    }
+    .back { /* 黒面 */
+      background: radial-gradient(circle at 30% 30%, var(--black-piece-bottom), var(--black-piece-top));
+      transform: rotateY(180deg);
+    }
+
+    /* 最新エフェクト：着手可能点 */
+    .cell.is-valid::before {
+      content: '';
+      width: 30%; height: 30%;
+      background-color: var(--gold);
+      border-radius: 50%;
+      position: absolute;
+      opacity: 0;
+      animation: pulse 1.5s infinite;
+      pointer-events: none;
+    }
+    @keyframes pulse { 0% { transform: scale(0.5); opacity: 0.5; } 100% { transform: scale(2); opacity: 0; } }
+
+    /* --- CONTROLS & FOOTER --- */
+    .controls { margin-top: 20px; }
+    .btn-reset {
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 10px 25px;
+      border-radius: 99px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .btn-reset:active { background: var(--gold); color: #000; }
+    footer { margin-top: 30px; font-size: 0.7rem; color: #666; }
+
+    /* --- IMPACTFUL WIN/LOSE OVERLAYS --- */
+    .overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
       display: flex;
-      gap: 10px;
-      width: 100%;
-      max-width: 420px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.5s ease;
     }
-    button {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: bold;
-      cursor: pointer;
-      background: #2e7d52;
-      color: #fff;
-    }
-    button.secondary {
-      background: #2d3832;
-      color: #d0d8d3;
-    }
-    button:active { opacity: 0.85; }
+    .overlay.is-active { opacity: 1; pointer-events: auto; }
+    .overlay-content { text-align: center; animation: swoosh-in 0.5s ease; }
+    @keyframes swoosh-in { 0% { transform: translateX(-50px) scale(0.9); opacity: 0; } 100% { transform: translateX(0) scale(1); opacity: 1; } }
+    
+    .win-text { font-size: 3rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 20px; background: linear-gradient(to bottom, #fff, var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .lose-text { font-size: 3rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 20px; color: #888; }
+    .result-score { font-size: 1.5rem; color: #fff; margin-bottom: 30px; }
+    .winner-icon { font-size: 5rem; margin-bottom: 20px; animation: crown 1s infinite alternate; }
+    @keyframes crown { 0% { transform: translateY(-10px) scale(1); } 100% { transform: translateY(10px) scale(1.1); } }
 
-    .note {
-      margin-top: 14px;
-      font-size: 0.78rem;
-      color: #9eb0a5;
-      max-width: 420px;
-      line-height: 1.5;
-      text-align: center;
+    /* --- LOADING SPINNER --- */
+    .loading-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg-color);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200; transition: opacity 0.5s ease;
     }
+    .loading-overlay.is-hidden { opacity: 0; pointer-events: none; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--grid-line);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
   </style>
 </head>
 <body>
 
+  <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
+
   <header>
-    <h1>NFC オセロ対戦</h1>
-    <div class="badge-row">
-      <span class="badge" id="roomBadge">ルーム: ---</span>
-      <span class="badge" id="roleBadge">役割: ---</span>
+    <h1>Luxury Othello</h1>
+    <div class="status-bar">
+      <div class="turn-indicator" id="turnIndicator">
+        <span id="turnIcon"></span><span id="turnText">Connecting...</span>
+      </div>
+      <div class="score">
+        <span class="indicator-black">⚫️ <span id="blackCount">2</span></span>
+        <span class="indicator-white">⚪️ <span id="whiteCount">2</span></span>
+      </div>
     </div>
   </header>
 
-  <div class="status-box">
-    <div class="turn-text" id="statusText">接続中...</div>
-    <div class="score-row">
-      <div class="score-item"><span class="mini-disc mini-black"></span>黒: <strong id="blackCount">2</strong></div>
-      <div class="score-item"><span class="mini-disc mini-white"></span>白: <strong id="whiteCount">2</strong></div>
+  <div class="board-container">
+    <div class="board" id="board">
+      <!-- 64 cells will be generated here by JS -->
     </div>
   </div>
 
-  <div class="board" id="board"></div>
-
   <div class="controls">
-    <button class="secondary" id="resetBtn">新しく対局を始める（リセット）</button>
+    <button class="btn-reset" id="resetBtn">New Game</button>
   </div>
 
-  <p class="note" id="urlHint"></p>
+  <footer>
+    Powered by NFC & Firebase | Tap your side to play
+  </footer>
 
-  <!-- Firebase SDK (Compat版でシンプルに記述) -->
+  <!-- Win/Lose Overlays -->
+  <div class="overlay" id="winOverlay">
+    <div class="overlay-content">
+      <div class="winner-icon">👑</div>
+      <div class="win-text">YOU WIN!</div>
+      <div class="result-score" id="winResultScore">Final Score: 32 - 32</div>
+      <button class="btn-reset" onclick="resetGame()">Play Again</button>
+    </div>
+  </div>
+  <div class="overlay" id="loseOverlay">
+    <div class="overlay-content">
+      <div class="win-text" style="font-size: 2rem; color:#888;">GAME OVER</div>
+      <div class="lose-text">YOU LOSE</div>
+      <div class="result-score" id="loseResultScore">Final Score: 32 - 32</div>
+      <button class="btn-reset" onclick="resetGame()">Try Again</button>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
   <script>
     // ==========================================
-    // 1. ここにご自身のFirebase設定を貼り付けます
+    // FIREBASE CONFIGURATION (Paste yours here)
     // ==========================================
- const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyAPNky4RdawJbmE5QDFCWLUgvPzKyhX_ZA",
   authDomain: "othellonfc.firebaseapp.com",
   databaseURL: "https://othellonfc-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -199,225 +261,236 @@
   messagingSenderId: "537820849805",
   appId: "1:537820849805:web:87184086fbfbe861f7a4c4",
   measurementId: "G-VEPKLNTP6T"
-  };
+};
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     // ==========================================
-    // 2. NFCのURLパラメータ取得 (?key=001&side=black)
+    // APP STATE & URL PARAMS
     // ==========================================
     const params = new URLSearchParams(window.location.search);
-    // keyがない場合は 'demo' ルームにする
     const roomKey = (params.get("key") || "demo").replace(/[^a-zA-Z0-9_-]/g, "");
-    // side: 'black' | 'white' | それ以外は観戦モード
     const rawSide = (params.get("side") || "").toLowerCase();
     const mySide = (rawSide === "black" || rawSide === "white") ? rawSide : "spectator";
 
-    document.getElementById("roomBadge").textContent = `キーホルダーID: ${roomKey}`;
-    document.getElementById("roleBadge").textContent =
-      mySide === "black" ? "あなた: 黒（先攻）" :
-      mySide === "white" ? "あなた: 白（後攻）" : "モード: 観戦";
+    const roomRef = db.ref(`othello_rooms/${roomKey}`);
+    let currentGameData = null;
+    let myTurn = false;
 
-    const baseUrl = window.location.origin + window.location.pathname;
-    document.getElementById("urlHint").innerHTML =
-      `タグA(黒): <code>?key=${roomKey}&side=black</code><br>タグB(白): <code>?key=${roomKey}&side=white</code>`;
-
-    // ==========================================
-    // 3. オセロのロジック
-    // ==========================================
-    // 0: 空, 1: 黒, 2: 白
+    // Othello Constants
     const EMPTY = 0, BLACK = 1, WHITE = 2;
-    const DIRS = [
-      [-1,-1], [-1,0], [-1,1],
-      [0,-1],          [0,1],
-      [1,-1],  [1,0],  [1,1]
-    ];
+    const DIRS = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
 
+    // ==========================================
+    // CORE GAME LOGIC
+    // ==========================================
     function createInitialBoard() {
       const b = Array.from({ length: 8 }, () => Array(8).fill(EMPTY));
-      b[3][3] = WHITE;
-      b[3][4] = BLACK;
-      b[4][3] = BLACK;
-      b[4][4] = WHITE;
+      b[3][3] = WHITE; b[3][4] = BLACK;
+      b[4][3] = BLACK; b[4][4] = WHITE;
       return b;
     }
 
-    function getFlippable(board, r, c, player) {
+    function getFlips(board, r, c, player) {
       if (board[r][c] !== EMPTY) return [];
       const opponent = player === BLACK ? WHITE : BLACK;
-      let toFlip = [];
-
+      let totalFlips = [];
       for (const [dr, dc] of DIRS) {
         let nr = r + dr, nc = c + dc;
-        const line = [];
+        let line = [];
         while (nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && board[nr][nc] === opponent) {
           line.push([nr, nc]);
-          nr += dr;
-          nc += dc;
+          nr += dr; nc += dc;
         }
         if (line.length > 0 && nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && board[nr][nc] === player) {
-          toFlip = toFlip.concat(line);
+          totalFlips = totalFlips.concat(line);
         }
       }
-      return toFlip;
+      return totalFlips;
     }
 
-    function getValidMoves(board, player) {
+    function getAllValidMoves(board, player) {
       const moves = [];
       for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
-          if (getFlippable(board, r, c, player).length > 0) {
-            moves.push([r, c]);
-          }
+          if (getFlips(board, r, c, player).length > 0) moves.push([r, c]);
         }
       }
       return moves;
     }
 
-    function countDiscs(board) {
-      let black = 0, white = 0;
-      for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-          if (board[r][c] === BLACK) black++;
-          if (board[r][c] === WHITE) white++;
-        }
-      }
-      return { black, white };
-    }
-
     // ==========================================
-    // 4. Firebaseとのリアルタイム同期
+    // FIREBASE SYNC & RENDER
     // ==========================================
-    const roomRef = db.ref(`othello_rooms/${roomKey}`);
-    let currentState = null;
-
-    // 15分以上操作がなければ次回アクセス時に自動リセットできるようにする
-    const EXPIRE_MS = 15 * 60 * 1000;
-
-    function resetGame() {
-      const initialState = {
-        board: createInitialBoard(),
-        turn: BLACK,
-        status: "playing", // playing | finished
-        message: "黒の番です",
-        updatedAt: Date.now()
-      };
-      roomRef.set(initialState);
-    }
-
     roomRef.on("value", (snapshot) => {
+      document.getElementById("loadingOverlay").classList.add("is-hidden");
       const data = snapshot.val();
-      if (!data || !data.board || (data.updatedAt && Date.now() - data.updatedAt > EXPIRE_MS)) {
-        resetGame();
+      if (!data || !data.board) {
+        if (mySide === 'black') resetGame(); // 黒だけが初期化権限を持つ（簡易運用）
         return;
       }
-      currentState = data;
+      currentGameData = data;
       render(data);
+      checkWinCondition(data);
     });
 
+    function render(state) {
+      const boardEl = document.getElementById("board");
+      if (boardEl.children.length === 0) {
+        initializeBoardUI(boardEl); // 初回のみDOM生成
+      }
+
+      const myNum = mySide === 'black' ? BLACK : mySide === 'white' ? WHITE : null;
+      myTurn = (state.status === 'playing' && state.turn === myNum);
+      const validMoves = myTurn ? getAllValidMoves(state.board, myNum) : [];
+      const validSet = new Set(validMoves.map(m => `${m[0]}-${m[1]}`));
+
+      // Update Status
+      const turnTextEl = document.getElementById("turnText");
+      const turnIconEl = document.getElementById("turnIcon");
+      const indicatorEl = document.getElementById("turnIndicator");
+      
+      if(state.status === 'playing') {
+        if(myNum) {
+          turnTextEl.textContent = myTurn ? "YOUR TURN" : "OPPONENT'S TURN";
+          turnTextEl.style.color = myTurn ? var(--gold) : var(--text-color);
+          indicatorEl.className = "turn-indicator " + (myTurn ? (myNum === BLACK ? "indicator-black" : "indicator-white") : "");
+        } else {
+          turnTextEl.textContent = state.turn === BLACK ? "BLACK'S TURN" : "WHITE'S TURN";
+          indicatorEl.className = "turn-indicator " + (state.turn === BLACK ? "indicator-black" : "indicator-white");
+        }
+      } else {
+        turnTextEl.textContent = state.status === 'finished' ? "GAME OVER" : "WAITING...";
+        indicatorEl.className = "turn-indicator";
+      }
+
+      // Update Score & Pieces
+      let bCount=0, wCount=0;
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const cell = boardEl.children[r * 8 + c];
+          const val = state.board[r][c];
+          const cellId = `${r}-${c}`;
+
+          // Update Cell State for valid move hint
+          cell.className = `cell ${validSet.has(cellId) ? 'is-valid' : ''}`;
+
+          // Update Piece (Create or Flip)
+          let piece = cell.querySelector('.piece');
+          if (val !== EMPTY) {
+            bCount += (val === BLACK);
+            wCount += (val === WHITE);
+            
+            if (!piece) {
+              piece = document.createElement('div');
+              piece.innerHTML = '<div class="piece-face front"></div><div class="piece-face back"></div>';
+              cell.appendChild(piece);
+            }
+            // Apply 3D flip state
+            piece.className = `piece ${val === BLACK ? 'is-black' : 'is-white'}`;
+          } else if (piece) {
+            piece.remove(); // 石がなくなった場合
+          }
+        }
+      }
+      document.getElementById("blackCount").textContent = bCount;
+      document.getElementById("whiteCount").textContent = wCount;
+    }
+
+    function initializeBoardUI(container) {
+      for (let i = 0; i < 64; i++) {
+        const cell = document.createElement('div');
+        const r = Math.floor(i / 8);
+        const c = i % 8;
+        cell.addEventListener('click', () => handleCellClick(r, c));
+        container.appendChild(cell);
+      }
+    }
+
+    // ==========================================
+    // INTERACTION & GAME FLOW
+    // ==========================================
     function handleCellClick(r, c) {
-      if (!currentState || currentState.status !== "playing") return;
+      if (!myTurn || !currentGameData) return;
+      const myNum = mySide === 'black' ? BLACK : WHITE;
+      const flips = getFlips(currentGameData.board, r, c, myNum);
+      if (flips.length === 0) return; // 置けない場所
 
-      const myNum = mySide === "black" ? BLACK : mySide === "white" ? WHITE : 0;
-      if (myNum === 0) {
-        alert("観戦モードのため操作できません。黒または白のNFCタグから開いてください。");
-        return;
-      }
-      if (currentState.turn !== myNum) {
-        return; // 相手のターンは無視
-      }
+      // Optimistically update board locally
+      const newBoard = currentGameData.board.map(row => [...row]);
+      newBoard[r][c] = myNum;
+      for (const [fr, fc] of flips) { newBoard[fr][fc] = myNum; }
 
-      const board = currentState.board.map(row => [...row]);
-      const flips = getFlippable(board, r, c, myNum);
-      if (flips.length === 0) return;
-
-      // 石を置いて裏返す
-      board[r][c] = myNum;
-      for (const [fr, fc] of flips) {
-        board[fr][fc] = myNum;
-      }
-
+      // Determine next turn
       const nextPlayer = myNum === BLACK ? WHITE : BLACK;
-      const nextMoves = getValidMoves(board, nextPlayer);
-      const myNextMoves = getValidMoves(board, myNum);
-
       let nextTurn = nextPlayer;
-      let status = "playing";
-      let message = nextPlayer === BLACK ? "黒の番です" : "白の番です";
+      let nextStatus = 'playing';
+      let nextMessage = '';
 
-      if (nextMoves.length === 0 && myNextMoves.length === 0) {
-        // 両者打てない＝終局
-        status = "finished";
-        const { black, white } = countDiscs(board);
-        if (black > white) message = `対局終了！ 黒の勝ち（${black} 対 ${white}）`;
-        else if (white > black) message = `対局終了！ 白の勝ち（${white} 対 ${black}）`;
-        else message = `対局終了！ 引き分け（${black} 対 ${white}）`;
-      } else if (nextMoves.length === 0) {
-        // 相手が打てないのでパス
-        nextTurn = myNum;
-        const skippedName = nextPlayer === BLACK ? "黒" : "白";
-        const contName = myNum === BLACK ? "黒" : "白";
-        message = `${skippedName}は置ける場所がないためパス！ 続けて${contName}の番です`;
+      if (getAllValidMoves(newBoard, nextPlayer).length === 0) {
+        if (getAllValidMoves(newBoard, myNum).length === 0) {
+          nextStatus = 'finished'; // 終局
+        } else {
+          nextTurn = myNum; // パス
+          nextMessage = (myNum === BLACK ? "White" : "Black") + " has no moves. Your turn again.";
+        }
       }
 
+      // Push state to Firebase
       roomRef.set({
-        board,
+        board: newBoard,
         turn: nextTurn,
-        status,
-        message,
+        status: nextStatus,
+        lastMove: {r, c, player: myNum},
+        message: nextMessage,
         updatedAt: Date.now()
       });
     }
 
-    // ==========================================
-    // 5. 画面描画
-    // ==========================================
-    function render(state) {
-      const boardEl = document.getElementById("board");
-      boardEl.innerHTML = "";
-
-      const myNum = mySide === "black" ? BLACK : mySide === "white" ? WHITE : 0;
-      const isMyTurn = state.status === "playing" && state.turn === myNum;
-      const validSet = new Set(
-        isMyTurn ? getValidMoves(state.board, myNum).map(([r, c]) => `${r},${c}`) : []
-      );
-
-      for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-          const cell = document.createElement("div");
-          cell.className = "cell";
-          if (validSet.has(`${r},${c}`)) {
-            cell.classList.add("valid");
-          }
-          cell.addEventListener("click", () => handleCellClick(r, c));
-
-          const val = state.board[r][c];
-          if (val === BLACK || val === WHITE) {
-            const disc = document.createElement("div");
-            disc.className = "disc " + (val === BLACK ? "black" : "white");
-            cell.appendChild(disc);
-          }
-          boardEl.appendChild(cell);
-        }
-      }
-
-      const { black, white } = countDiscs(state.board);
-      document.getElementById("blackCount").textContent = black;
-      document.getElementById("whiteCount").textContent = white;
-
-      let statusLabel = state.message;
-      if (state.status === "playing" && myNum !== 0) {
-        statusLabel += isMyTurn ? "【あなたの番】" : "（相手待ち）";
-      }
-      document.getElementById("statusText").textContent = statusLabel;
+    function resetGame() {
+      if (mySide !== 'black') return; // 黒のみリセット可能に制限（イベント用）
+      roomRef.set({
+        board: createInitialBoard(),
+        turn: BLACK,
+        status: 'playing',
+        message: 'New Game Started',
+        updatedAt: Date.now()
+      });
     }
+    document.getElementById("resetBtn").addEventListener("click", resetGame);
 
-    document.getElementById("resetBtn").addEventListener("click", () => {
-      if (confirm("盤面をリセットして新しい対局を始めますか？")) {
-        resetGame();
+    // ==========================================
+    // IMPACTFUL WIN/LOSE LOGIC
+    // ==========================================
+    function checkWinCondition(data) {
+      if (data.status !== 'finished') {
+        document.getElementById("winOverlay").classList.remove("is-active");
+        document.getElementById("loseOverlay").classList.remove("is-active");
+        return;
       }
-    });
+      const myNum = mySide === 'black' ? BLACK : mySide === 'white' ? WHITE : null;
+      if (!myNum) return; // 観戦者
+
+      let bCount=0, wCount=0;
+      for(let r=0; r<8; r++) for(let c=0; c<8; c++) {
+        if(data.board[r][c]===BLACK) bCount++; else if(data.board[r][c]===WHITE) wCount++;
+      }
+      const myScore = myNum === BLACK ? bCount : wCount;
+      const opScore = myNum === BLACK ? wCount : bCount;
+      const scoreText = `Final Score: ${bCount} - ${wCount}`;
+
+      if (myScore > opScore) {
+        document.getElementById("winResultScore").textContent = scoreText;
+        setTimeout(() => document.getElementById("winOverlay").classList.add("is-active"), 1000);
+      } else if (myScore < opScore) {
+        document.getElementById("loseResultScore").textContent = scoreText;
+        setTimeout(() => document.getElementById("loseOverlay").classList.add("is-active"), 1000);
+      } else {
+        // Draw (optional handling)
+        alert("DRAW GAME! " + scoreText);
+      }
+    }
   </script>
 </body>
 </html>
