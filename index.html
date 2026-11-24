@@ -3,196 +3,459 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Luxury Othello</title>
+  <title>NFC OTHELLO BATTLE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-color: #111111;
-      --board-bg: #1a1a1a;
-      --cell-bg: #222222;
-      --grid-line: #333333;
-      --gold: #c5a059;
-      --black-piece-top: #111111;
-      --black-piece-bottom: #333333;
-      --white-piece-top: #eaeaea;
-      --white-piece-bottom: #a0a0a0;
-      --text-color: #e0e0e0;
-      --transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+      --bg-center: #1e1b18;
+      --bg-edge: #090807;
+      --gold-bright: #f2dfb6;
+      --gold-mid: #c6a468;
+      --gold-dark: #6b532b;
+      --gold-line: rgba(214, 181, 118, 0.38);
+      --text-ivory: #f4efe6;
+      --text-muted: #b5aa99;
+      --flip-ease: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
     body {
-      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 50% 22%, var(--bg-center) 0%, #110f0d 55%, var(--bg-edge) 100%);
+      color: var(--text-ivory);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      padding: 16px;
+      padding: 18px 14px;
     }
-    header { text-align: center; margin-bottom: 14px; }
-    h1 { font-size: 1.4rem; letter-spacing: 0.15em; color: var(--gold); margin-bottom: 8px; }
-    .status-bar {
-      background: var(--board-bg);
-      border: 1px solid var(--grid-line);
-      border-radius: 99px;
-      padding: 8px 18px;
+
+    .app-shell {
+      width: 100%;
+      max-width: 400px;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 14px;
-      font-size: 0.85rem;
-      flex-wrap: wrap;
-      justify-content: center;
     }
-    .turn-indicator { font-weight: bold; }
-    .score { display: flex; gap: 12px; font-feature-settings: "tnum"; }
-    .board-container {
-      perspective: 1000px;
-      margin: 12px 0;
-      padding: 10px;
-      background: radial-gradient(circle at center, #333, #111);
-      border-radius: 16px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+
+    /* ヘッダー：左にNFC、右にOTHELLO BATTLE */
+    .top-header {
+      width: 100%;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 0 6px;
+      margin-bottom: 12px;
     }
-    .board {
-      width: 88vw;
-      max-width: 390px;
+
+    .nfc-tag {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      color: #d8cfc0;
+    }
+
+    .main-title {
+      font-family: 'Cinzel', Georgia, serif;
+      font-size: 1.28rem;
+      font-weight: 500;
+      letter-spacing: 0.11em;
+      color: var(--text-ivory);
+      text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);
+      flex: 1;
+      text-align: center;
+      padding-right: 18px;
+    }
+
+    /* ターン表示カプセル */
+    .turn-capsule {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 6px 18px 6px 12px;
+      margin-bottom: 16px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(44, 41, 38, 0.92), rgba(20, 18, 17, 0.96));
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow:
+        0 6px 16px rgba(0, 0, 0, 0.65),
+        inset 0 1px 1px rgba(255, 255, 255, 0.12);
+    }
+
+    .turn-disc-icon {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      display: inline-block;
+      transition: all 0.3s ease;
+    }
+
+    .turn-disc-icon.black {
+      background: radial-gradient(circle at 35% 30%, #444 0%, #111 65%, #000 100%);
+      border: 1px solid rgba(214, 181, 118, 0.55);
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
+    }
+
+    .turn-disc-icon.white {
+      background: radial-gradient(circle at 35% 30%, #ffffff 0%, #e5dccb 70%, #b8ad99 100%);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 8px rgba(255, 245, 225, 0.45);
+    }
+
+    .turn-label {
+      font-size: 0.84rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: #f3eee4;
+    }
+
+    /* 高級シャンパンゴールドの立体ベゼル盤面 */
+    .board-outer-frame {
+      width: 100%;
       aspect-ratio: 1 / 1;
-      background-color: var(--grid-line);
+      padding: 8px;
+      border-radius: 10px;
+      background: linear-gradient(
+        145deg,
+        #e8d5ad 0%,
+        #9d814d 22%,
+        #4a3b22 50%,
+        #8e7343 78%,
+        #ebd9b3 100%
+      );
+      box-shadow:
+        0 24px 50px rgba(0, 0, 0, 0.85),
+        0 2px 4px rgba(255, 240, 200, 0.25) inset,
+        0 -2px 6px rgba(0, 0, 0, 0.8) inset;
+      position: relative;
+    }
+
+    .board-inner-rim {
+      width: 100%;
+      height: 100%;
+      padding: 2px;
+      border-radius: 6px;
+      background: linear-gradient(180deg, #2d2518, #6b5634, #251e14);
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.9);
+    }
+
+    .board {
+      width: 100%;
+      height: 100%;
+      border-radius: 4px;
+      background:
+        radial-gradient(circle at 28% 22%, rgba(255, 235, 190, 0.08), transparent 55%),
+        linear-gradient(160deg, #161412 0%, #090807 60%, #12100e 100%);
       display: grid;
       grid-template-columns: repeat(8, 1fr);
       grid-template-rows: repeat(8, 1fr);
-      gap: 1px;
-      border: 4px solid var(--grid-line);
-      border-radius: 8px;
+      position: relative;
       overflow: hidden;
     }
+
     .cell {
-      background-color: var(--cell-bg);
       position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      border-right: 1px solid var(--gold-line);
+      border-bottom: 1px solid var(--gold-line);
+      box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.65);
     }
+
+    .cell:nth-child(8n) { border-right: none; }
+    .cell:nth-child(n+57) { border-bottom: none; }
+
+    /* 画像左上の二重ゴールドリング（着手可能マス） */
     .cell.is-valid::before {
-      content: '';
-      width: 30%;
-      height: 30%;
-      background-color: var(--gold);
+      content: "";
+      width: 78%;
+      height: 78%;
       border-radius: 50%;
-      position: absolute;
-      animation: pulse 1.5s infinite;
+      border: 2.5px solid #dfc188;
+      box-shadow:
+        0 0 8px rgba(235, 200, 130, 0.45),
+        inset 0 0 4px rgba(235, 200, 130, 0.45),
+        0 2px 5px rgba(0, 0, 0, 0.85);
+      background: radial-gradient(circle, rgba(223, 193, 136, 0.08) 45%, rgba(223, 193, 136, 0.25) 68%, transparent 72%);
+      animation: ringGlow 1.8s infinite ease-in-out;
       pointer-events: none;
     }
-    @keyframes pulse {
-      0% { transform: scale(0.5); opacity: 0.7; }
-      100% { transform: scale(1.8); opacity: 0; }
+
+    @keyframes ringGlow {
+      0%, 100% { transform: scale(0.96); opacity: 0.85; }
+      50% { transform: scale(1.03); opacity: 1; }
     }
+
+    /* オセロ石（3D回転 + メタリック黒 & パール白） */
     .piece {
-      width: 84%;
-      height: 84%;
+      width: 82%;
+      height: 82%;
       border-radius: 50%;
       position: relative;
-      transition: var(--transition);
+      transition: var(--flip-ease);
       transform-style: preserve-3d;
     }
+
     .piece.is-black { transform: rotateY(180deg); }
     .piece.is-white { transform: rotateY(0deg); }
+
     .piece-face {
       width: 100%;
       height: 100%;
       border-radius: 50%;
       position: absolute;
       backface-visibility: hidden;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.5);
     }
+
+    /* 白石：陶器・パール調の立体光沢 */
     .front {
-      background: radial-gradient(circle at 30% 30%, var(--white-piece-top), var(--white-piece-bottom));
+      background:
+        radial-gradient(circle at 30% 25%, #ffffff 0%, #faf5eb 30%, #e6dccb 65%, #bfb29c 92%, #9c8f7a 100%);
+      box-shadow:
+        0 4px 7px rgba(0, 0, 0, 0.85),
+        0 1px 2px rgba(255, 255, 255, 0.95) inset,
+        0 -3px 5px rgba(110, 95, 70, 0.35) inset;
     }
+
+    /* 黒石：金属リム＋同心円スピン加工の質感 */
     .back {
-      background: radial-gradient(circle at 30% 30%, var(--black-piece-bottom), var(--black-piece-top));
       transform: rotateY(180deg);
+      background:
+        radial-gradient(circle at 28% 24%, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0.04) 32%, transparent 55%),
+        repeating-radial-gradient(
+          circle at 50% 50%,
+          #161616 0px,
+          #2c2c2c 1.5px,
+          #141414 3px,
+          #252525 4.5px
+        );
+      border: 1.5px solid #6e6a63;
+      box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.92),
+        inset 0 1px 2px rgba(255, 255, 255, 0.32),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.9),
+        inset 0 0 0 3px rgba(20, 20, 20, 0.75);
     }
-    .controls { margin-top: 14px; }
+
+    /* スコア表示（盤面直下の1行） */
+    .score-line {
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 0.86rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      color: #d6cec0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .score-pair {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .mini-stone {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .mini-stone.black {
+      background: radial-gradient(circle at 30% 30%, #4a4a4a, #111);
+      border: 1px solid #6c665c;
+    }
+
+    .mini-stone.white {
+      background: radial-gradient(circle at 30% 30%, #fff, #d6ccb9);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+    }
+
+    .score-sep {
+      color: rgba(255, 255, 255, 0.25);
+      margin: 0 2px;
+    }
+
+    /* RESET GAME ボタン */
+    .reset-wrap {
+      margin-top: 14px;
+    }
+
     .btn-reset {
-      background: transparent;
-      border: 1px solid var(--gold);
-      color: var(--gold);
-      padding: 10px 22px;
-      border-radius: 99px;
-      font-size: 0.85rem;
+      padding: 10px 30px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: linear-gradient(180deg, rgba(58, 55, 51, 0.85), rgba(26, 24, 22, 0.95));
+      color: #e6dfd3;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
       cursor: pointer;
+      box-shadow:
+        0 6px 16px rgba(0, 0, 0, 0.65),
+        inset 0 1px 1px rgba(255, 255, 255, 0.16);
+      transition: transform 0.15s ease, border-color 0.2s ease;
     }
-    .btn-reset:active { background: var(--gold); color: #000; }
-    .info-msg {
-      margin-top: 12px;
-      font-size: 0.75rem;
-      color: #b0b0b0;
-      max-width: 390px;
+
+    .btn-reset:active {
+      transform: scale(0.97);
+      border-color: var(--gold-mid);
+    }
+
+    .sub-status {
+      margin-top: 10px;
+      font-size: 0.7rem;
+      color: rgba(214, 206, 192, 0.45);
+      letter-spacing: 0.06em;
       text-align: center;
-      word-break: break-all;
     }
-    .err-msg {
-      margin-top: 6px;
-      font-size: 0.75rem;
+
+    .err-status {
+      margin-top: 4px;
+      font-size: 0.72rem;
       color: #ff8a80;
-      max-width: 390px;
       text-align: center;
       word-break: break-all;
     }
+
+    /* 勝敗演出オーバーレイ */
     .overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(8px);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 5, 4, 0.88);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s ease;
     }
-    .overlay.is-active { opacity: 1; pointer-events: auto; }
-    .overlay-content { text-align: center; color: #fff; }
-    .win-text { font-size: 2.5rem; font-weight: bold; color: var(--gold); margin-bottom: 12px; }
-    .lose-text { font-size: 2.5rem; font-weight: bold; color: #aaa; margin-bottom: 12px; }
-    .result-score { font-size: 1.2rem; margin-bottom: 24px; }
+
+    .overlay.is-active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .overlay-card {
+      width: 86vw;
+      max-width: 340px;
+      padding: 30px 22px;
+      border-radius: 16px;
+      text-align: center;
+      background: radial-gradient(circle at top, rgba(226, 198, 141, 0.16), rgba(15, 13, 11, 0.96));
+      border: 1px solid rgba(226, 198, 141, 0.45);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
+      animation: popCard 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes popCard {
+      0% { transform: scale(0.9) translateY(12px); opacity: 0; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .crown {
+      font-size: 3.2rem;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 4px 12px rgba(242, 223, 182, 0.45));
+    }
+
+    .result-heading {
+      font-family: 'Cinzel', Georgia, serif;
+      font-size: 2.1rem;
+      letter-spacing: 0.14em;
+      margin-bottom: 10px;
+    }
+
+    .result-heading.win {
+      background: linear-gradient(180deg, #fff8e7 0%, #d5b270 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .result-heading.lose {
+      color: #9b9286;
+    }
+
+    .result-detail {
+      font-size: 0.95rem;
+      color: #e6dfd3;
+      margin-bottom: 22px;
+      letter-spacing: 0.06em;
+    }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>LUXURY OTHELLO</h1>
-    <div class="status-bar">
-      <div class="turn-indicator" id="turnText">Connecting...</div>
-      <div class="score">
-        <span>⚫️ <strong id="blackCount">2</strong></span>
-        <span>⚪️ <strong id="whiteCount">2</strong></span>
+  <main class="app-shell">
+    <header class="top-header">
+      <span class="nfc-tag">NFC</span>
+      <h1 class="main-title">OTHELLO BATTLE</h1>
+    </header>
+
+    <div class="turn-capsule">
+      <span class="turn-disc-icon black" id="turnDiscIcon"></span>
+      <span class="turn-label" id="turnText">CONNECTING...</span>
+    </div>
+
+    <div class="board-outer-frame">
+      <div class="board-inner-rim">
+        <div class="board" id="board"></div>
       </div>
     </div>
-  </header>
 
-  <div class="board-container">
-    <div class="board" id="board"></div>
-  </div>
+    <div class="score-line">
+      <span class="score-pair">
+        <span class="mini-stone black"></span>
+        <span>BLACK: <strong id="blackCount">2</strong></span>
+      </span>
+      <span class="score-sep">|</span>
+      <span class="score-pair">
+        <span class="mini-stone white"></span>
+        <span>WHITE: <strong id="whiteCount">2</strong></span>
+      </span>
+    </div>
 
-  <div class="controls">
-    <button class="btn-reset" id="resetBtn">New Game</button>
-  </div>
+    <div class="reset-wrap">
+      <button class="btn-reset" id="resetBtn">RESET GAME</button>
+    </div>
 
-  <div class="info-msg" id="infoMsg"></div>
-  <div class="err-msg" id="errMsg"></div>
+    <div class="sub-status" id="metaInfo"></div>
+    <div class="err-status" id="errInfo"></div>
+  </main>
 
   <div class="overlay" id="winOverlay">
-    <div class="overlay-content">
-      <div style="font-size:4rem;margin-bottom:10px;">👑</div>
-      <div class="win-text">YOU WIN!</div>
-      <div class="result-score" id="winResultScore"></div>
-      <button class="btn-reset" id="winResetBtn">Play Again</button>
+    <div class="overlay-card">
+      <div class="crown">👑</div>
+      <div class="result-heading win">YOU WIN</div>
+      <div class="result-detail" id="winScore"></div>
+      <button class="btn-reset" id="winResetBtn">PLAY AGAIN</button>
     </div>
   </div>
 
   <div class="overlay" id="loseOverlay">
-    <div class="overlay-content">
-      <div class="lose-text">YOU LOSE</div>
-      <div class="result-score" id="loseResultScore"></div>
-      <button class="btn-reset" id="loseResetBtn">Try Again</button>
+    <div class="overlay-card">
+      <div class="result-heading lose">YOU LOSE</div>
+      <div class="result-detail" id="loseScore"></div>
+      <button class="btn-reset" id="loseResetBtn">TRY AGAIN</button>
     </div>
   </div>
 
@@ -216,9 +479,8 @@
     const rawSide = (params.get("side") || "").toLowerCase();
     const mySide = (rawSide === "black" || rawSide === "white") ? rawSide : "black";
 
-    const infoEl = document.getElementById("infoMsg");
-    const errEl = document.getElementById("errMsg");
-    infoEl.textContent = `Room: ${roomKey} / Side: ${mySide}`;
+    document.getElementById("metaInfo").textContent = `ROOM: ${roomKey}  •  YOUR SIDE: ${mySide.toUpperCase()}`;
+    const errEl = document.getElementById("errInfo");
 
     const EMPTY = 0, BLACK = 1, WHITE = 2;
     const DIRS = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
@@ -276,25 +538,26 @@
 
     function render(state) {
       const boardEl = document.getElementById("board");
-      if (boardEl.children.length === 0) {
-        initializeBoardUI(boardEl);
-      }
+      if (boardEl.children.length === 0) initializeBoardUI(boardEl);
 
       const myNum = mySide === "black" ? BLACK : WHITE;
       myTurn = (state.status === "playing" && state.turn === myNum);
       const validMoves = myTurn ? getAllValidMoves(state.board, myNum) : [];
       const validSet = new Set(validMoves.map(m => `${m[0]}-${m[1]}`));
 
-      const turnTextEl = document.getElementById("turnText");
+      const turnEl = document.getElementById("turnText");
+      const turnIconEl = document.getElementById("turnDiscIcon");
+
       if (state.status === "playing") {
-        const sideLabel = mySide === "black" ? "黒" : "白";
-        turnTextEl.textContent = myTurn
-          ? `あなたの番（${sideLabel}）`
-          : (state.turn === BLACK ? "黒の番（相手待ち）" : "白の番（相手待ち）");
-        turnTextEl.style.color = myTurn ? "#c5a059" : "#e0e0e0";
+        const isBlackTurn = state.turn === BLACK;
+        turnIconEl.className = "turn-disc-icon " + (isBlackTurn ? "black" : "white");
+        if (myTurn) {
+          turnEl.textContent = isBlackTurn ? "BLACK'S TURN (YOU)" : "WHITE'S TURN (YOU)";
+        } else {
+          turnEl.textContent = isBlackTurn ? "BLACK'S TURN" : "WHITE'S TURN";
+        }
       } else {
-        turnTextEl.textContent = "GAME OVER";
-        turnTextEl.style.color = "#e0e0e0";
+        turnEl.textContent = "GAME FINISHED";
       }
 
       let bCount = 0, wCount = 0;
@@ -333,9 +596,7 @@
 
       const newBoard = currentGameData.board.map(row => [...row]);
       newBoard[r][c] = myNum;
-      for (const [fr, fc] of flips) {
-        newBoard[fr][fc] = myNum;
-      }
+      for (const [fr, fc] of flips) newBoard[fr][fc] = myNum;
 
       const nextPlayer = myNum === BLACK ? WHITE : BLACK;
       let nextTurn = nextPlayer;
@@ -355,7 +616,6 @@
         status: nextStatus,
         updatedAt: Date.now()
       };
-
       currentGameData = nextState;
       render(nextState);
 
@@ -397,18 +657,17 @@
       }
       const myScore = mySide === "black" ? bCount : wCount;
       const opScore = mySide === "black" ? wCount : bCount;
-      const scoreText = `Final Score: ${bCount} - ${wCount}`;
+      const scoreText = `BLACK ${bCount}  |  WHITE ${wCount}`;
 
       if (myScore > opScore) {
-        document.getElementById("winResultScore").textContent = scoreText;
-        winEl.classList.add("is-active");
+        document.getElementById("winScore").textContent = scoreText;
+        setTimeout(() => winEl.classList.add("is-active"), 550);
       } else if (myScore < opScore) {
-        document.getElementById("loseResultScore").textContent = scoreText;
-        loseEl.classList.add("is-active");
+        document.getElementById("loseScore").textContent = scoreText;
+        setTimeout(() => loseEl.classList.add("is-active"), 550);
       }
     }
 
-    // まずローカル初期盤面を描画して画面を止まらないようにする
     const fallbackState = {
       board: createInitialBoard(),
       turn: BLACK,
