@@ -6,18 +6,15 @@
   <title>NFC OTHELLO BATTLE</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-center: #1e1b18;
-      --bg-edge: #090807;
-      --gold-bright: #f2dfb6;
-      --gold-mid: #c6a468;
-      --gold-dark: #6b532b;
-      --gold-line: rgba(214, 181, 118, 0.38);
-      --text-ivory: #f4efe6;
-      --text-muted: #b5aa99;
-      --flip-ease: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+      --gold-1: #fff3d1;
+      --gold-2: #d8b46c;
+      --gold-3: #8c6b32;
+      --gold-4: #3b2b11;
+      --ivory: #f5efe4;
+      --muted: #b5aa99;
     }
 
     * {
@@ -28,306 +25,237 @@
       user-select: none;
     }
 
-    body {
+    html, body {
+      width: 100%;
       min-height: 100vh;
-      background: radial-gradient(ellipse at 50% 22%, var(--bg-center) 0%, #110f0d 55%, var(--bg-edge) 100%);
-      color: var(--text-ivory);
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(216, 180, 108, 0.11) 0%, rgba(28, 24, 20, 0.92) 45%, #070605 100%);
+      color: var(--ivory);
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* 背景の微細な高級テクスチャ */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(rgba(255, 235, 190, 0.035) 1px, transparent 0);
+      background-size: 24px 24px;
+      z-index: 0;
+    }
+
+    .stage {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+      padding: 16px 14px 24px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 18px 14px;
     }
 
-    .app-shell {
+    /* ヘッダー：NFC + OTHELLO BATTLE */
+    .header-bar {
       width: 100%;
-      max-width: 400px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    /* ヘッダー：左にNFC、右にOTHELLO BATTLE */
-    .top-header {
-      width: 100%;
+      max-width: 392px;
       display: flex;
       align-items: baseline;
       justify-content: space-between;
-      padding: 0 6px;
-      margin-bottom: 12px;
+      padding: 0 4px;
+      margin-bottom: 10px;
     }
 
-    .nfc-tag {
+    .brand-nfc {
       font-family: 'Inter', sans-serif;
       font-size: 0.92rem;
-      font-weight: 400;
+      font-weight: 500;
       letter-spacing: 0.08em;
-      color: #d8cfc0;
+      color: #d5cbb9;
     }
 
-    .main-title {
+    .brand-title {
       font-family: 'Cinzel', Georgia, serif;
-      font-size: 1.28rem;
-      font-weight: 500;
-      letter-spacing: 0.11em;
-      color: var(--text-ivory);
-      text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);
+      font-size: 1.3rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: var(--ivory);
+      text-shadow: 0 2px 14px rgba(0, 0, 0, 0.85);
       flex: 1;
       text-align: center;
-      padding-right: 18px;
+      padding-right: 16px;
     }
 
     /* ターン表示カプセル */
-    .turn-capsule {
+    .turn-pill {
       display: inline-flex;
       align-items: center;
       gap: 9px;
-      padding: 6px 18px 6px 12px;
-      margin-bottom: 16px;
+      padding: 7px 18px 7px 12px;
+      margin-bottom: 14px;
       border-radius: 999px;
-      background: linear-gradient(180deg, rgba(44, 41, 38, 0.92), rgba(20, 18, 17, 0.96));
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: linear-gradient(180deg, rgba(56, 52, 47, 0.92), rgba(20, 18, 16, 0.96));
+      border: 1px solid rgba(255, 240, 200, 0.16);
       box-shadow:
-        0 6px 16px rgba(0, 0, 0, 0.65),
-        inset 0 1px 1px rgba(255, 255, 255, 0.12);
+        0 8px 20px rgba(0, 0, 0, 0.75),
+        inset 0 1px 1px rgba(255, 255, 255, 0.16);
     }
 
-    .turn-disc-icon {
+    .turn-orb {
       width: 15px;
       height: 15px;
       border-radius: 50%;
       display: inline-block;
-      transition: all 0.3s ease;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .turn-disc-icon.black {
-      background: radial-gradient(circle at 35% 30%, #444 0%, #111 65%, #000 100%);
-      border: 1px solid rgba(214, 181, 118, 0.55);
-      box-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
+    .turn-orb.black {
+      background: radial-gradient(circle at 32% 28%, #525252, #121212 68%, #000 100%);
+      border: 1px solid rgba(216, 180, 108, 0.65);
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.9);
     }
 
-    .turn-disc-icon.white {
-      background: radial-gradient(circle at 35% 30%, #ffffff 0%, #e5dccb 70%, #b8ad99 100%);
-      border: 1px solid rgba(255, 255, 255, 0.8);
-      box-shadow: 0 0 8px rgba(255, 245, 225, 0.45);
+    .turn-orb.white {
+      background: radial-gradient(circle at 32% 28%, #ffffff, #ece3d2 70%, #b8ac96 100%);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 0 10px rgba(255, 244, 214, 0.55);
     }
 
     .turn-label {
-      font-size: 0.84rem;
+      font-size: 0.82rem;
       font-weight: 600;
-      letter-spacing: 0.06em;
-      color: #f3eee4;
+      letter-spacing: 0.08em;
+      color: #f5f0e6;
     }
 
-    /* 高級シャンパンゴールドの立体ベゼル盤面 */
-    .board-outer-frame {
+    /* 高級シャンパンゴールド枠 */
+    .frame-outer {
       width: 100%;
+      max-width: 392px;
       aspect-ratio: 1 / 1;
       padding: 8px;
-      border-radius: 10px;
+      border-radius: 12px;
       background: linear-gradient(
-        145deg,
-        #e8d5ad 0%,
-        #9d814d 22%,
-        #4a3b22 50%,
-        #8e7343 78%,
-        #ebd9b3 100%
+        135deg,
+        #f5e5c0 0%,
+        #b59355 20%,
+        #4a3a1e 48%,
+        #a88649 76%,
+        #f2dfb5 100%
       );
       box-shadow:
-        0 24px 50px rgba(0, 0, 0, 0.85),
-        0 2px 4px rgba(255, 240, 200, 0.25) inset,
-        0 -2px 6px rgba(0, 0, 0, 0.8) inset;
-      position: relative;
+        0 26px 55px rgba(0, 0, 0, 0.9),
+        0 0 28px rgba(216, 180, 108, 0.14),
+        0 1px 2px rgba(255, 250, 235, 0.55) inset,
+        0 -2px 5px rgba(0, 0, 0, 0.85) inset;
     }
 
-    .board-inner-rim {
+    .frame-inner {
       width: 100%;
       height: 100%;
       padding: 2px;
-      border-radius: 6px;
-      background: linear-gradient(180deg, #2d2518, #6b5634, #251e14);
-      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.9);
+      border-radius: 7px;
+      background: linear-gradient(180deg, #2b2214, #6e5730, #1f180e);
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.95);
     }
 
-    .board {
+    #gameCanvas {
       width: 100%;
       height: 100%;
-      border-radius: 4px;
-      background:
-        radial-gradient(circle at 28% 22%, rgba(255, 235, 190, 0.08), transparent 55%),
-        linear-gradient(160deg, #161412 0%, #090807 60%, #12100e 100%);
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      grid-template-rows: repeat(8, 1fr);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .cell {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: block;
+      border-radius: 5px;
       cursor: pointer;
-      border-right: 1px solid var(--gold-line);
-      border-bottom: 1px solid var(--gold-line);
-      box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.65);
+      touch-action: manipulation;
     }
 
-    .cell:nth-child(8n) { border-right: none; }
-    .cell:nth-child(n+57) { border-bottom: none; }
-
-    /* 画像左上の二重ゴールドリング（着手可能マス） */
-    .cell.is-valid::before {
-      content: "";
-      width: 78%;
-      height: 78%;
-      border-radius: 50%;
-      border: 2.5px solid #dfc188;
-      box-shadow:
-        0 0 8px rgba(235, 200, 130, 0.45),
-        inset 0 0 4px rgba(235, 200, 130, 0.45),
-        0 2px 5px rgba(0, 0, 0, 0.85);
-      background: radial-gradient(circle, rgba(223, 193, 136, 0.08) 45%, rgba(223, 193, 136, 0.25) 68%, transparent 72%);
-      animation: ringGlow 1.8s infinite ease-in-out;
-      pointer-events: none;
-    }
-
-    @keyframes ringGlow {
-      0%, 100% { transform: scale(0.96); opacity: 0.85; }
-      50% { transform: scale(1.03); opacity: 1; }
-    }
-
-    /* オセロ石（3D回転 + メタリック黒 & パール白） */
-    .piece {
-      width: 82%;
-      height: 82%;
-      border-radius: 50%;
-      position: relative;
-      transition: var(--flip-ease);
-      transform-style: preserve-3d;
-    }
-
-    .piece.is-black { transform: rotateY(180deg); }
-    .piece.is-white { transform: rotateY(0deg); }
-
-    .piece-face {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      position: absolute;
-      backface-visibility: hidden;
-    }
-
-    /* 白石：陶器・パール調の立体光沢 */
-    .front {
-      background:
-        radial-gradient(circle at 30% 25%, #ffffff 0%, #faf5eb 30%, #e6dccb 65%, #bfb29c 92%, #9c8f7a 100%);
-      box-shadow:
-        0 4px 7px rgba(0, 0, 0, 0.85),
-        0 1px 2px rgba(255, 255, 255, 0.95) inset,
-        0 -3px 5px rgba(110, 95, 70, 0.35) inset;
-    }
-
-    /* 黒石：金属リム＋同心円スピン加工の質感 */
-    .back {
-      transform: rotateY(180deg);
-      background:
-        radial-gradient(circle at 28% 24%, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0.04) 32%, transparent 55%),
-        repeating-radial-gradient(
-          circle at 50% 50%,
-          #161616 0px,
-          #2c2c2c 1.5px,
-          #141414 3px,
-          #252525 4.5px
-        );
-      border: 1.5px solid #6e6a63;
-      box-shadow:
-        0 4px 8px rgba(0, 0, 0, 0.92),
-        inset 0 1px 2px rgba(255, 255, 255, 0.32),
-        inset 0 -2px 4px rgba(0, 0, 0, 0.9),
-        inset 0 0 0 3px rgba(20, 20, 20, 0.75);
-    }
-
-    /* スコア表示（盤面直下の1行） */
-    .score-line {
-      margin-top: 16px;
+    /* スコア行 */
+    .score-strip {
+      margin-top: 15px;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 12px;
       font-size: 0.86rem;
       font-weight: 500;
-      letter-spacing: 0.05em;
-      color: #d6cec0;
+      letter-spacing: 0.06em;
+      color: #ddd4c4;
       font-variant-numeric: tabular-nums;
     }
 
-    .score-pair {
+    .score-unit {
       display: inline-flex;
       align-items: center;
       gap: 7px;
     }
 
-    .mini-stone {
+    .score-dot {
       width: 14px;
       height: 14px;
       border-radius: 50%;
       display: inline-block;
     }
 
-    .mini-stone.black {
-      background: radial-gradient(circle at 30% 30%, #4a4a4a, #111);
-      border: 1px solid #6c665c;
+    .score-dot.black {
+      background: radial-gradient(circle at 32% 28%, #555, #111);
+      border: 1px solid rgba(216, 180, 108, 0.65);
     }
 
-    .mini-stone.white {
-      background: radial-gradient(circle at 30% 30%, #fff, #d6ccb9);
-      border: 1px solid rgba(255, 255, 255, 0.7);
+    .score-dot.white {
+      background: radial-gradient(circle at 32% 28%, #fff, #d6ccb8);
+      border: 1px solid rgba(255, 255, 255, 0.75);
     }
 
-    .score-sep {
-      color: rgba(255, 255, 255, 0.25);
-      margin: 0 2px;
+    .score-divider {
+      color: rgba(255, 255, 255, 0.24);
     }
 
     /* RESET GAME ボタン */
-    .reset-wrap {
+    .action-row {
       margin-top: 14px;
+      display: flex;
+      gap: 10px;
     }
 
     .btn-reset {
-      padding: 10px 30px;
+      padding: 10px 32px;
       border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: linear-gradient(180deg, rgba(58, 55, 51, 0.85), rgba(26, 24, 22, 0.95));
-      color: #e6dfd3;
+      border: 1px solid rgba(255, 240, 205, 0.2);
+      background: linear-gradient(180deg, rgba(66, 62, 57, 0.88), rgba(24, 22, 20, 0.96));
+      color: #ebe4d8;
       font-family: 'Inter', sans-serif;
       font-size: 0.82rem;
       font-weight: 500;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.09em;
       cursor: pointer;
       box-shadow:
-        0 6px 16px rgba(0, 0, 0, 0.65),
-        inset 0 1px 1px rgba(255, 255, 255, 0.16);
-      transition: transform 0.15s ease, border-color 0.2s ease;
+        0 8px 20px rgba(0, 0, 0, 0.75),
+        inset 0 1px 1px rgba(255, 255, 255, 0.18);
+      transition: transform 0.15s ease, border-color 0.25s ease;
+    }
+
+    .btn-reset:hover {
+      border-color: rgba(216, 180, 108, 0.55);
     }
 
     .btn-reset:active {
-      transform: scale(0.97);
-      border-color: var(--gold-mid);
+      transform: scale(0.96);
     }
 
-    .sub-status {
+    .meta-note {
       margin-top: 10px;
-      font-size: 0.7rem;
-      color: rgba(214, 206, 192, 0.45);
+      font-size: 0.68rem;
       letter-spacing: 0.06em;
+      color: rgba(214, 206, 192, 0.42);
       text-align: center;
     }
 
-    .err-status {
+    .err-note {
       margin-top: 4px;
       font-size: 0.72rem;
       color: #ff8a80;
@@ -335,127 +263,154 @@
       word-break: break-all;
     }
 
-    /* 勝敗演出オーバーレイ */
-    .overlay {
+    /* 勝敗フルスクリーン演出 */
+    .result-modal {
       position: fixed;
       inset: 0;
-      background: rgba(6, 5, 4, 0.88);
-      backdrop-filter: blur(10px);
+      z-index: 200;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 100;
+      background: rgba(5, 4, 3, 0.86);
+      backdrop-filter: blur(12px);
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.45s ease;
     }
 
-    .overlay.is-active {
+    .result-modal.active {
       opacity: 1;
       pointer-events: auto;
     }
 
-    .overlay-card {
-      width: 86vw;
-      max-width: 340px;
-      padding: 30px 22px;
-      border-radius: 16px;
+    #fxCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 190;
+    }
+
+    .result-panel {
+      position: relative;
+      z-index: 205;
+      width: 88vw;
+      max-width: 348px;
+      padding: 34px 24px 28px;
+      border-radius: 18px;
       text-align: center;
-      background: radial-gradient(circle at top, rgba(226, 198, 141, 0.16), rgba(15, 13, 11, 0.96));
-      border: 1px solid rgba(226, 198, 141, 0.45);
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
-      animation: popCard 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      background:
+        radial-gradient(circle at 50% 0%, rgba(242, 214, 154, 0.2), rgba(15, 13, 11, 0.96) 65%);
+      border: 1px solid rgba(216, 180, 108, 0.5);
+      box-shadow:
+        0 30px 70px rgba(0, 0, 0, 0.95),
+        0 0 40px rgba(216, 180, 108, 0.16);
+      transform: scale(0.88) translateY(18px);
+      transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.25, 1);
     }
 
-    @keyframes popCard {
-      0% { transform: scale(0.9) translateY(12px); opacity: 0; }
-      100% { transform: scale(1) translateY(0); opacity: 1; }
+    .result-modal.active .result-panel {
+      transform: scale(1) translateY(0);
     }
 
-    .crown {
-      font-size: 3.2rem;
-      margin-bottom: 8px;
-      filter: drop-shadow(0 4px 12px rgba(242, 223, 182, 0.45));
+    .result-badge {
+      font-size: 3.3rem;
+      line-height: 1;
+      margin-bottom: 12px;
+      animation: floatCrown 2.2s ease-in-out infinite;
     }
 
-    .result-heading {
+    @keyframes floatCrown {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-6px) scale(1.06); }
+    }
+
+    .result-headline {
       font-family: 'Cinzel', Georgia, serif;
-      font-size: 2.1rem;
+      font-size: 2.2rem;
+      font-weight: 700;
       letter-spacing: 0.14em;
       margin-bottom: 10px;
     }
 
-    .result-heading.win {
-      background: linear-gradient(180deg, #fff8e7 0%, #d5b270 100%);
+    .result-headline.win {
+      background: linear-gradient(180deg, #fff9e8 0%, #e5c27b 55%, #a88240 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 18px rgba(229, 194, 123, 0.4));
     }
 
-    .result-heading.lose {
-      color: #9b9286;
+    .result-headline.lose {
+      color: #8f8679;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
     }
 
-    .result-detail {
-      font-size: 0.95rem;
-      color: #e6dfd3;
-      margin-bottom: 22px;
-      letter-spacing: 0.06em;
+    .result-score-box {
+      font-size: 0.98rem;
+      letter-spacing: 0.08em;
+      color: var(--ivory);
+      margin-bottom: 24px;
+      font-variant-numeric: tabular-nums;
     }
   </style>
 </head>
 <body>
 
-  <main class="app-shell">
-    <header class="top-header">
-      <span class="nfc-tag">NFC</span>
-      <h1 class="main-title">OTHELLO BATTLE</h1>
+  <canvas id="fxCanvas"></canvas>
+
+  <main class="stage">
+    <header class="header-bar">
+      <span class="brand-nfc">NFC</span>
+      <h1 class="brand-title">OTHELLO BATTLE</h1>
     </header>
 
-    <div class="turn-capsule">
-      <span class="turn-disc-icon black" id="turnDiscIcon"></span>
-      <span class="turn-label" id="turnText">CONNECTING...</span>
+    <div class="turn-pill">
+      <span class="turn-orb black" id="turnOrb"></span>
+      <span class="turn-label" id="turnLabel">CONNECTING...</span>
     </div>
 
-    <div class="board-outer-frame">
-      <div class="board-inner-rim">
-        <div class="board" id="board"></div>
+    <div class="frame-outer">
+      <div class="frame-inner">
+        <canvas id="gameCanvas" width="800" height="800"></canvas>
       </div>
     </div>
 
-    <div class="score-line">
-      <span class="score-pair">
-        <span class="mini-stone black"></span>
+    <div class="score-strip">
+      <span class="score-unit">
+        <span class="score-dot black"></span>
         <span>BLACK: <strong id="blackCount">2</strong></span>
       </span>
-      <span class="score-sep">|</span>
-      <span class="score-pair">
-        <span class="mini-stone white"></span>
+      <span class="score-divider">|</span>
+      <span class="score-unit">
+        <span class="score-dot white"></span>
         <span>WHITE: <strong id="whiteCount">2</strong></span>
       </span>
     </div>
 
-    <div class="reset-wrap">
+    <div class="action-row">
       <button class="btn-reset" id="resetBtn">RESET GAME</button>
     </div>
 
-    <div class="sub-status" id="metaInfo"></div>
-    <div class="err-status" id="errInfo"></div>
+    <div class="meta-note" id="metaNote"></div>
+    <div class="err-note" id="errNote"></div>
   </main>
 
-  <div class="overlay" id="winOverlay">
-    <div class="overlay-card">
-      <div class="crown">👑</div>
-      <div class="result-heading win">YOU WIN</div>
-      <div class="result-detail" id="winScore"></div>
-      <button class="btn-reset" id="winResetBtn">PLAY AGAIN</button>
+  <div class="result-modal" id="winModal">
+    <div class="result-panel">
+      <div class="result-badge">👑</div>
+      <div class="result-headline win">YOU WIN</div>
+      <div class="result-score-box" id="winScoreText"></div>
+      <button class="btn-reset" id="winReplayBtn">PLAY AGAIN</button>
     </div>
   </div>
 
-  <div class="overlay" id="loseOverlay">
-    <div class="overlay-card">
-      <div class="result-heading lose">YOU LOSE</div>
-      <div class="result-detail" id="loseScore"></div>
-      <button class="btn-reset" id="loseResetBtn">TRY AGAIN</button>
+  <div class="result-modal" id="loseModal">
+    <div class="result-panel">
+      <div class="result-badge">⚔️</div>
+      <div class="result-headline lose">YOU LOSE</div>
+      <div class="result-score-box" id="loseScoreText"></div>
+      <button class="btn-reset" id="loseReplayBtn">TRY AGAIN</button>
     </div>
   </div>
 
@@ -463,6 +418,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
   <script>
+    // ==========================================
+    // 1. FIREBASE CONFIG
+    // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyAPNky4RdawJbmE5QDFCWLUgvPzKyhX_ZA",
       authDomain: "othellonfc.firebaseapp.com",
@@ -474,20 +432,22 @@
       measurementId: "G-VEPKLNTP6T"
     };
 
+    // ==========================================
+    // 2. URL PARAMS
+    // ==========================================
     const params = new URLSearchParams(window.location.search);
     const roomKey = (params.get("key") || "demo").replace(/[^a-zA-Z0-9_-]/g, "");
     const rawSide = (params.get("side") || "").toLowerCase();
     const mySide = (rawSide === "black" || rawSide === "white") ? rawSide : "black";
 
-    document.getElementById("metaInfo").textContent = `ROOM: ${roomKey}  •  YOUR SIDE: ${mySide.toUpperCase()}`;
-    const errEl = document.getElementById("errInfo");
+    document.getElementById("metaNote").textContent = `ROOM: ${roomKey}  •  SIDE: ${mySide.toUpperCase()}`;
+    const errEl = document.getElementById("errNote");
 
+    // ==========================================
+    // 3. OTHELLO RULES
+    // ==========================================
     const EMPTY = 0, BLACK = 1, WHITE = 2;
     const DIRS = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
-
-    let roomRef = null;
-    let currentGameData = null;
-    let myTurn = false;
 
     function createInitialBoard() {
       const b = Array.from({ length: 8 }, () => Array(8).fill(EMPTY));
@@ -499,19 +459,19 @@
     function getFlips(board, r, c, player) {
       if (!board || board[r][c] !== EMPTY) return [];
       const opponent = player === BLACK ? WHITE : BLACK;
-      let totalFlips = [];
+      let flips = [];
       for (const [dr, dc] of DIRS) {
         let nr = r + dr, nc = c + dc;
-        let line = [];
+        const line = [];
         while (nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && board[nr][nc] === opponent) {
           line.push([nr, nc]);
           nr += dr; nc += dc;
         }
         if (line.length > 0 && nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && board[nr][nc] === player) {
-          totalFlips = totalFlips.concat(line);
+          flips = flips.concat(line);
         }
       }
-      return totalFlips;
+      return flips;
     }
 
     function getAllValidMoves(board, player) {
@@ -524,68 +484,545 @@
       return moves;
     }
 
-    function initializeBoardUI(container) {
-      container.innerHTML = "";
-      for (let i = 0; i < 64; i++) {
-        const cell = document.createElement("div");
-        cell.className = "cell";
-        const r = Math.floor(i / 8);
-        const c = i % 8;
-        cell.addEventListener("click", () => handleCellClick(r, c));
-        container.appendChild(cell);
+    // ==========================================
+    // 4. CANVAS LUXURY RENDERER & FX ENGINE
+    // ==========================================
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const fxCanvas = document.getElementById("fxCanvas");
+    const fxCtx = fxCanvas.getContext("2d");
+
+    // 盤面上の各マスの視覚状態（0〜1の反転進行度やポップ演出）
+    const cellAnim = Array.from({ length: 8 }, () =>
+      Array.from({ length: 8 }, () => ({
+        color: EMPTY,
+        flipProgress: 1, // 0 -> 1 で反転完了
+        fromColor: EMPTY,
+        toColor: EMPTY,
+        popProgress: 1,  // 0 -> 1 で着弾ポップ完了
+        delay: 0
+      }))
+    );
+
+    const shockwaves = []; // { r, c, radius, alpha, color }
+    const sparks = [];     // { x, y, vx, vy, life, maxLife, size, color }
+    const confetti = [];   // 勝利時の金粉パーティクル
+
+    let hoverCell = null;
+    let currentGameData = null;
+    let myTurn = false;
+    let roomRef = null;
+    let lastResultShown = null;
+
+    function resizeFxCanvas() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      fxCanvas.width = window.innerWidth * dpr;
+      fxCanvas.height = window.innerHeight * dpr;
+      fxCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener("resize", resizeFxCanvas);
+    resizeFxCanvas();
+
+    function syncBoardAnimation(nextBoard, placedCoord, flippedCoords) {
+      const placedSet = new Set(placedCoord ? [`${placedCoord[0]},${placedCoord[1]}`] : []);
+      const flipMap = new Map();
+      if (flippedCoords && placedCoord) {
+        flippedCoords.forEach(([fr, fc]) => {
+          const dist = Math.max(Math.abs(fr - placedCoord[0]), Math.abs(fc - placedCoord[1]));
+          flipMap.set(`${fr},${fc}`, dist * 0.08);
+        });
+      }
+
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const nextVal = nextBoard[r][c];
+          const anim = cellAnim[r][c];
+          const key = `${r},${c}`;
+
+          if (nextVal === EMPTY) {
+            anim.color = EMPTY;
+            anim.flipProgress = 1;
+            anim.popProgress = 1;
+            anim.delay = 0;
+            continue;
+          }
+
+          if (placedSet.has(key)) {
+            anim.color = nextVal;
+            anim.fromColor = nextVal;
+            anim.toColor = nextVal;
+            anim.popProgress = 0;
+            anim.flipProgress = 1;
+            anim.delay = 0;
+            triggerPlaceEffect(r, c, nextVal);
+          } else if (flipMap.has(key) && anim.color !== EMPTY && anim.color !== nextVal) {
+            anim.fromColor = anim.color;
+            anim.toColor = nextVal;
+            anim.color = nextVal;
+            anim.flipProgress = 0;
+            anim.delay = flipMap.get(key);
+          } else if (anim.color === EMPTY) {
+            anim.color = nextVal;
+            anim.fromColor = nextVal;
+            anim.toColor = nextVal;
+            anim.popProgress = 0;
+            anim.flipProgress = 1;
+            anim.delay = r * 0.02 + c * 0.02;
+          } else if (anim.color !== nextVal) {
+            // 外部同期などで色が変わった場合も反転アニメ
+            anim.fromColor = anim.color;
+            anim.toColor = nextVal;
+            anim.color = nextVal;
+            anim.flipProgress = 0;
+            anim.delay = 0;
+          }
+        }
       }
     }
 
-    function render(state) {
-      const boardEl = document.getElementById("board");
-      if (boardEl.children.length === 0) initializeBoardUI(boardEl);
+    function triggerPlaceEffect(r, c, player) {
+      const size = canvas.width;
+      const cellSize = size / 8;
+      const cx = (c + 0.5) * cellSize;
+      const cy = (r + 0.5) * cellSize;
 
-      const myNum = mySide === "black" ? BLACK : WHITE;
-      myTurn = (state.status === "playing" && state.turn === myNum);
-      const validMoves = myTurn ? getAllValidMoves(state.board, myNum) : [];
-      const validSet = new Set(validMoves.map(m => `${m[0]}-${m[1]}`));
+      shockwaves.push({
+        cx, cy,
+        radius: cellSize * 0.25,
+        maxRadius: cellSize * 1.15,
+        alpha: 0.95
+      });
 
-      const turnEl = document.getElementById("turnText");
-      const turnIconEl = document.getElementById("turnDiscIcon");
+      const rect = canvas.getBoundingClientRect();
+      const screenX = rect.left + (c + 0.5) * (rect.width / 8);
+      const screenY = rect.top + (r + 0.5) * (rect.height / 8);
 
-      if (state.status === "playing") {
-        const isBlackTurn = state.turn === BLACK;
-        turnIconEl.className = "turn-disc-icon " + (isBlackTurn ? "black" : "white");
-        if (myTurn) {
-          turnEl.textContent = isBlackTurn ? "BLACK'S TURN (YOU)" : "WHITE'S TURN (YOU)";
-        } else {
-          turnEl.textContent = isBlackTurn ? "BLACK'S TURN" : "WHITE'S TURN";
-        }
-      } else {
-        turnEl.textContent = "GAME FINISHED";
+      const count = 16;
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.3;
+        const speed = 1.4 + Math.random() * 2.8;
+        sparks.push({
+          x: screenX,
+          y: screenY,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 0,
+          maxLife: 24 + Math.floor(Math.random() * 14),
+          size: 2 + Math.random() * 2.5,
+          color: i % 2 === 0 ? "#fff0c2" : "#d8b46c"
+        });
+      }
+    }
+
+    function spawnWinConfetti() {
+      confetti.length = 0;
+      const colors = ["#fff3d1", "#e5c27b", "#b89146", "#ffffff", "#cfa658"];
+      for (let i = 0; i < 95; i++) {
+        confetti.push({
+          x: Math.random() * window.innerWidth,
+          y: -20 - Math.random() * window.innerHeight * 0.6,
+          vx: (Math.random() - 0.5) * 2.4,
+          vy: 2.2 + Math.random() * 3.6,
+          w: 6 + Math.random() * 6,
+          h: 3 + Math.random() * 4,
+          rot: Math.random() * Math.PI * 2,
+          vRot: (Math.random() - 0.5) * 0.16,
+          color: colors[i % colors.length]
+        });
+      }
+    }
+
+    function drawWhiteStone(ctx, cx, cy, radius, scaleX, scaleY, lift) {
+      ctx.save();
+      ctx.translate(cx, cy - lift);
+      ctx.scale(scaleX, scaleY);
+
+      // 浮き上がり影
+      ctx.save();
+      ctx.translate(0, 5 + lift * 0.65);
+      const shadowGrad = ctx.createRadialGradient(0, 0, radius * 0.2, 0, 0, radius * 1.12);
+      shadowGrad.addColorStop(0, "rgba(0, 0, 0, 0.78)");
+      shadowGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = shadowGrad;
+      ctx.beginPath();
+      ctx.arc(0, 0, radius * 1.12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // パール・陶器調グラデーション
+      const bodyGrad = ctx.createRadialGradient(
+        -radius * 0.32,
+        -radius * 0.34,
+        radius * 0.08,
+        0,
+        0,
+        radius
+      );
+      bodyGrad.addColorStop(0, "#ffffff");
+      bodyGrad.addColorStop(0.38, "#f7f0e2");
+      bodyGrad.addColorStop(0.78, "#dfd3be");
+      bodyGrad.addColorStop(1, "#a6977e");
+
+      ctx.fillStyle = bodyGrad;
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 繊細な縁取りとハイライト
+      ctx.strokeStyle = "rgba(255, 252, 245, 0.85)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, radius - 1, 0, Math.PI * 2);
+      ctx.stroke();
+
+      const glossGrad = ctx.createLinearGradient(-radius * 0.5, -radius * 0.6, radius * 0.4, radius * 0.2);
+      glossGrad.addColorStop(0, "rgba(255, 255, 255, 0.65)");
+      glossGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
+      ctx.fillStyle = glossGrad;
+      ctx.beginPath();
+      ctx.ellipse(-radius * 0.16, -radius * 0.24, radius * 0.45, radius * 0.24, -0.45, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function drawBlackStone(ctx, cx, cy, radius, scaleX, scaleY, lift) {
+      ctx.save();
+      ctx.translate(cx, cy - lift);
+      ctx.scale(scaleX, scaleY);
+
+      // 浮き上がり影
+      ctx.save();
+      ctx.translate(0, 5 + lift * 0.65);
+      const shadowGrad = ctx.createRadialGradient(0, 0, radius * 0.2, 0, 0, radius * 1.15);
+      shadowGrad.addColorStop(0, "rgba(0, 0, 0, 0.92)");
+      shadowGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = shadowGrad;
+      ctx.beginPath();
+      ctx.arc(0, 0, radius * 1.15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // 黒石本体（同心円スピン加工＋メタリックベベル）
+      const baseGrad = ctx.createRadialGradient(
+        -radius * 0.28,
+        -radius * 0.3,
+        radius * 0.05,
+        0,
+        0,
+        radius
+      );
+      baseGrad.addColorStop(0, "#3b3936");
+      baseGrad.addColorStop(0.45, "#191817");
+      baseGrad.addColorStop(0.88, "#0b0a0a");
+      baseGrad.addColorStop(1, "#26231e");
+
+      ctx.fillStyle = baseGrad;
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // レコード・精密旋盤のような同心円グルーブ
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(0, 0, radius * 0.84, 0, Math.PI * 2);
+      ctx.clip();
+
+      for (let ring = 0.22; ring <= 0.82; ring += 0.085) {
+        ctx.strokeStyle = ring % 0.17 < 0.09
+          ? "rgba(255, 242, 205, 0.065)"
+          : "rgba(0, 0, 0, 0.45)";
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * ring, 0, Math.PI * 2);
+        ctx.stroke();
       }
 
-      let bCount = 0, wCount = 0;
+      // 斜めからの金属光沢バンド
+      const sheenGrad = ctx.createLinearGradient(-radius, -radius, radius * 0.8, radius * 0.8);
+      sheenGrad.addColorStop(0, "rgba(255, 244, 214, 0.16)");
+      sheenGrad.addColorStop(0.45, "rgba(255, 244, 214, 0.02)");
+      sheenGrad.addColorStop(0.55, "rgba(255, 244, 214, 0.11)");
+      sheenGrad.addColorStop(1, "rgba(0, 0, 0, 0.2)");
+      ctx.fillStyle = sheenGrad;
+      ctx.fillRect(-radius, -radius, radius * 2, radius * 2);
+      ctx.restore();
+
+      // 外周ゴールド・シルバーのベベルリング
+      ctx.strokeStyle = "rgba(216, 180, 108, 0.48)";
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.arc(0, 0, radius - 1.2, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function drawBoardFrame(nowSec) {
+      const size = canvas.width;
+      const cellSize = size / 8;
+
+      // 盤面背景（リッチなダークグラデーション）
+      const bgGrad = ctx.createRadialGradient(
+        size * 0.35, size * 0.25, size * 0.05,
+        size * 0.5, size * 0.5, size * 0.82
+      );
+      bgGrad.addColorStop(0, "#1c1916");
+      bgGrad.addColorStop(0.55, "#0d0c0b");
+      bgGrad.addColorStop(1, "#070606");
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, size, size);
+
+      // ホバー中のマスをほのかに照らす
+      if (hoverCell && myTurn) {
+        const [hr, hc] = hoverCell;
+        const canFlip = currentGameData && getFlips(currentGameData.board, hr, hc, mySide === "black" ? BLACK : WHITE).length > 0;
+        if (canFlip) {
+          ctx.fillStyle = "rgba(229, 194, 123, 0.08)";
+          ctx.fillRect(hc * cellSize, hr * cellSize, cellSize, cellSize);
+        }
+      }
+
+      // ゴールド格子線
+      ctx.strokeStyle = "rgba(214, 181, 118, 0.34)";
+      ctx.lineWidth = 2;
+      for (let i = 1; i < 8; i++) {
+        const pos = i * cellSize;
+        ctx.beginPath();
+        ctx.moveTo(pos, 0);
+        ctx.lineTo(pos, size);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, pos);
+        ctx.lineTo(size, pos);
+        ctx.stroke();
+      }
+
+      // 着手可能マスのゴールドリング（画像左上の二重リング表現）
+      if (currentGameData && myTurn) {
+        const myNum = mySide === "black" ? BLACK : WHITE;
+        const validMoves = getAllValidMoves(currentGameData.board, myNum);
+        const pulse = 0.5 + 0.5 * Math.sin(nowSec * 4.2);
+
+        for (const [vr, vc] of validMoves) {
+          const cx = (vc + 0.5) * cellSize;
+          const cy = (vr + 0.5) * cellSize;
+          const rOuter = cellSize * (0.37 + pulse * 0.025);
+          const rInner = cellSize * 0.28;
+
+          ctx.save();
+          ctx.shadowColor = "rgba(235, 198, 122, 0.55)";
+          ctx.shadowBlur = 10 + pulse * 8;
+
+          ctx.strokeStyle = `rgba(238, 206, 138, ${0.72 + pulse * 0.25})`;
+          ctx.lineWidth = 3.2;
+          ctx.beginPath();
+          ctx.arc(cx, cy, rOuter, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.strokeStyle = `rgba(214, 174, 98, ${0.42 + pulse * 0.25})`;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(cx, cy, rInner, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // 石の描画（反転＆着弾ポップアニメーション付き）
+      const radius = cellSize * 0.39;
       for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
-          const cell = boardEl.children[r * 8 + c];
-          const val = state.board[r][c];
-          cell.className = `cell ${validSet.has(`${r}-${c}`) ? "is-valid" : ""}`;
+          const anim = cellAnim[r][c];
+          if (anim.color === EMPTY) continue;
 
-          let piece = cell.querySelector(".piece");
-          if (val !== EMPTY) {
-            if (val === BLACK) bCount++;
-            if (val === WHITE) wCount++;
-            if (!piece) {
-              piece = document.createElement("div");
-              piece.innerHTML = '<div class="piece-face front"></div><div class="piece-face back"></div>';
-              cell.appendChild(piece);
-            }
-            piece.className = `piece ${val === BLACK ? "is-black" : "is-white"}`;
-          } else if (piece) {
-            piece.remove();
+          const cx = (c + 0.5) * cellSize;
+          const cy = (r + 0.5) * cellSize;
+
+          let scaleX = 1;
+          let scaleY = 1;
+          let lift = 0;
+          let drawColor = anim.color;
+
+          if (anim.popProgress < 1) {
+            const t = anim.popProgress;
+            const bounce = t < 0.7 ? (t / 0.7) * 1.14 : 1.14 - ((t - 0.7) / 0.3) * 0.14;
+            scaleX = bounce;
+            scaleY = bounce;
+            lift = Math.sin(t * Math.PI) * 10;
+          }
+
+          if (anim.flipProgress < 1) {
+            const p = anim.flipProgress;
+            // 0 -> 0.5 で縮んで前半色、0.5 -> 1.0 で広がって後半色
+            const angle = p * Math.PI;
+            scaleX = Math.max(0.06, Math.abs(Math.cos(angle)));
+            scaleY = 1 + Math.sin(p * Math.PI) * 0.12;
+            lift = Math.sin(p * Math.PI) * 16;
+            drawColor = p < 0.5 ? anim.fromColor : anim.toColor;
+          }
+
+          if (drawColor === WHITE) {
+            drawWhiteStone(ctx, cx, cy, radius, scaleX, scaleY, lift);
+          } else if (drawColor === BLACK) {
+            drawBlackStone(ctx, cx, cy, radius, scaleX, scaleY, lift);
           }
         }
       }
 
-      document.getElementById("blackCount").textContent = bCount;
-      document.getElementById("whiteCount").textContent = wCount;
-      checkWinCondition(state, bCount, wCount);
+      // 着弾ショックウェーブ
+      for (let i = shockwaves.length - 1; i >= 0; i--) {
+        const sw = shockwaves[i];
+        sw.radius += (sw.maxRadius - sw.radius) * 0.16;
+        sw.alpha *= 0.88;
+        if (sw.alpha < 0.03) {
+          shockwaves.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.strokeStyle = `rgba(242, 214, 154, ${sw.alpha})`;
+        ctx.lineWidth = 3 * sw.alpha + 0.8;
+        ctx.beginPath();
+        ctx.arc(sw.cx, sw.cy, sw.radius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    function drawScreenFx() {
+      fxCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const sp = sparks[i];
+        sp.x += sp.vx;
+        sp.y += sp.vy;
+        sp.vy += 0.07; // 重力
+        sp.vx *= 0.96;
+        sp.life++;
+        if (sp.life >= sp.maxLife) {
+          sparks.splice(i, 1);
+          continue;
+        }
+        const alpha = 1 - sp.life / sp.maxLife;
+        fxCtx.save();
+        fxCtx.globalAlpha = alpha;
+        fxCtx.fillStyle = sp.color;
+        fxCtx.shadowColor = "#e5c27b";
+        fxCtx.shadowBlur = 8;
+        fxCtx.beginPath();
+        fxCtx.arc(sp.x, sp.y, sp.size * alpha + 0.6, 0, Math.PI * 2);
+        fxCtx.fill();
+        fxCtx.restore();
+      }
+
+      for (let i = confetti.length - 1; i >= 0; i--) {
+        const cf = confetti[i];
+        cf.x += cf.vx;
+        cf.y += cf.vy;
+        cf.rot += cf.vRot;
+        if (cf.y > window.innerHeight + 30) {
+          confetti.splice(i, 1);
+          continue;
+        }
+        fxCtx.save();
+        fxCtx.translate(cf.x, cf.y);
+        fxCtx.rotate(cf.rot);
+        fxCtx.fillStyle = cf.color;
+        fxCtx.fillRect(-cf.w / 2, -cf.h / 2, cf.w, cf.h);
+        fxCtx.restore();
+      }
+    }
+
+    let lastFrameTime = performance.now();
+    function loop(now) {
+      const dt = Math.min((now - lastFrameTime) / 1000, 0.05);
+      lastFrameTime = now;
+
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const anim = cellAnim[r][c];
+          if (anim.popProgress < 1) {
+            anim.popProgress = Math.min(1, anim.popProgress + dt * 3.4);
+          }
+          if (anim.flipProgress < 1) {
+            if (anim.delay > 0) {
+              anim.delay = Math.max(0, anim.delay - dt);
+            } else {
+              anim.flipProgress = Math.min(1, anim.flipProgress + dt * 2.3);
+            }
+          }
+        }
+      }
+
+      drawBoardFrame(now / 1000);
+      drawScreenFx();
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+
+    // ==========================================
+    // 5. POINTER INPUT & UI SYNC
+    // ==========================================
+    function getCellFromPointer(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      if (x < 0 || y < 0 || x > rect.width || y > rect.height) return null;
+      const c = Math.min(7, Math.max(0, Math.floor((x / rect.width) * 8)));
+      const r = Math.min(7, Math.max(0, Math.floor((y / rect.height) * 8)));
+      return [r, c];
+    }
+
+    canvas.addEventListener("pointermove", (e) => {
+      hoverCell = getCellFromPointer(e.clientX, e.clientY);
+    });
+
+    canvas.addEventListener("pointerleave", () => {
+      hoverCell = null;
+    });
+
+    canvas.addEventListener("pointerdown", (e) => {
+      const cell = getCellFromPointer(e.clientX, e.clientY);
+      if (!cell) return;
+      handleCellClick(cell[0], cell[1]);
+    });
+
+    function countPieces(board) {
+      let black = 0, white = 0;
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          if (board[r][c] === BLACK) black++;
+          else if (board[r][c] === WHITE) white++;
+        }
+      }
+      return { black, white };
+    }
+
+    function applyGameState(state, placedCoord = null, flippedCoords = null) {
+      currentGameData = state;
+      const myNum = mySide === "black" ? BLACK : WHITE;
+      myTurn = (state.status === "playing" && state.turn === myNum);
+
+      const orb = document.getElementById("turnOrb");
+      const label = document.getElementById("turnLabel");
+
+      if (state.status === "playing") {
+        const isBlackTurn = state.turn === BLACK;
+        orb.className = "turn-orb " + (isBlackTurn ? "black" : "white");
+        label.textContent = isBlackTurn
+          ? (myTurn ? "BLACK'S TURN • YOUR MOVE" : "BLACK'S TURN")
+          : (myTurn ? "WHITE'S TURN • YOUR MOVE" : "WHITE'S TURN");
+      } else {
+        label.textContent = "GAME OVER";
+      }
+
+      const { black, white } = countPieces(state.board);
+      document.getElementById("blackCount").textContent = black;
+      document.getElementById("whiteCount").textContent = white;
+
+      syncBoardAnimation(state.board, placedCoord, flippedCoords);
+      handleResultModal(state, black, white);
     }
 
     function handleCellClick(r, c) {
@@ -594,16 +1031,18 @@
       const flips = getFlips(currentGameData.board, r, c, myNum);
       if (flips.length === 0) return;
 
-      const newBoard = currentGameData.board.map(row => [...row]);
-      newBoard[r][c] = myNum;
-      for (const [fr, fc] of flips) newBoard[fr][fc] = myNum;
+      const nextBoard = currentGameData.board.map(row => [...row]);
+      nextBoard[r][c] = myNum;
+      for (const [fr, fc] of flips) {
+        nextBoard[fr][fc] = myNum;
+      }
 
       const nextPlayer = myNum === BLACK ? WHITE : BLACK;
       let nextTurn = nextPlayer;
       let nextStatus = "playing";
 
-      if (getAllValidMoves(newBoard, nextPlayer).length === 0) {
-        if (getAllValidMoves(newBoard, myNum).length === 0) {
+      if (getAllValidMoves(nextBoard, nextPlayer).length === 0) {
+        if (getAllValidMoves(nextBoard, myNum).length === 0) {
           nextStatus = "finished";
         } else {
           nextTurn = myNum;
@@ -611,13 +1050,14 @@
       }
 
       const nextState = {
-        board: newBoard,
+        board: nextBoard,
         turn: nextTurn,
         status: nextStatus,
+        lastMove: { r, c, player: myNum },
         updatedAt: Date.now()
       };
-      currentGameData = nextState;
-      render(nextState);
+
+      applyGameState(nextState, [r, c], flips);
 
       if (roomRef) {
         roomRef.set(nextState).catch(err => {
@@ -627,14 +1067,19 @@
     }
 
     function resetGame() {
+      lastResultShown = null;
+      document.getElementById("winModal").classList.remove("active");
+      document.getElementById("loseModal").classList.remove("active");
+
       const initialState = {
         board: createInitialBoard(),
         turn: BLACK,
         status: "playing",
+        lastMove: null,
         updatedAt: Date.now()
       };
-      currentGameData = initialState;
-      render(initialState);
+
+      applyGameState(initialState);
 
       if (roomRef) {
         roomRef.set(initialState).catch(err => {
@@ -644,38 +1089,53 @@
     }
 
     document.getElementById("resetBtn").addEventListener("click", resetGame);
-    document.getElementById("winResetBtn").addEventListener("click", resetGame);
-    document.getElementById("loseResetBtn").addEventListener("click", resetGame);
+    document.getElementById("winReplayBtn").addEventListener("click", resetGame);
+    document.getElementById("loseReplayBtn").addEventListener("click", resetGame);
 
-    function checkWinCondition(data, bCount, wCount) {
-      const winEl = document.getElementById("winOverlay");
-      const loseEl = document.getElementById("loseOverlay");
-      if (data.status !== "finished") {
-        winEl.classList.remove("is-active");
-        loseEl.classList.remove("is-active");
+    function handleResultModal(state, black, white) {
+      const winModal = document.getElementById("winModal");
+      const loseModal = document.getElementById("loseModal");
+
+      if (state.status !== "finished") {
+        lastResultShown = null;
+        winModal.classList.remove("active");
+        loseModal.classList.remove("active");
         return;
       }
-      const myScore = mySide === "black" ? bCount : wCount;
-      const opScore = mySide === "black" ? wCount : bCount;
-      const scoreText = `BLACK ${bCount}  |  WHITE ${wCount}`;
 
-      if (myScore > opScore) {
-        document.getElementById("winScore").textContent = scoreText;
-        setTimeout(() => winEl.classList.add("is-active"), 550);
-      } else if (myScore < opScore) {
-        document.getElementById("loseScore").textContent = scoreText;
-        setTimeout(() => loseEl.classList.add("is-active"), 550);
-      }
+      if (lastResultShown === state.updatedAt) return;
+      lastResultShown = state.updatedAt;
+
+      const myScore = mySide === "black" ? black : white;
+      const opScore = mySide === "black" ? white : black;
+      const scoreText = `BLACK ${black}  —  WHITE ${white}`;
+
+      setTimeout(() => {
+        if (myScore > opScore) {
+          document.getElementById("winScoreText").textContent = scoreText;
+          winModal.classList.add("active");
+          spawnWinConfetti();
+        } else if (myScore < opScore) {
+          document.getElementById("loseScoreText").textContent = scoreText;
+          loseModal.classList.add("active");
+        } else {
+          document.getElementById("winScoreText").textContent = `DRAW • ${scoreText}`;
+          winModal.classList.add("active");
+        }
+      }, 750);
     }
 
+    // ==========================================
+    // 6. INITIALIZE & FIREBASE REALTIME SYNC
+    // ==========================================
     const fallbackState = {
       board: createInitialBoard(),
       turn: BLACK,
       status: "playing",
+      lastMove: null,
       updatedAt: Date.now()
     };
-    currentGameData = fallbackState;
-    render(fallbackState);
+    applyGameState(fallbackState);
 
     try {
       firebase.initializeApp(firebaseConfig);
@@ -690,9 +1150,22 @@
           });
           return;
         }
-        currentGameData = data;
         errEl.textContent = "";
-        render(data);
+
+        let placed = null;
+        let flipped = null;
+        if (data.lastMove && typeof data.lastMove.r === "number" && typeof data.lastMove.c === "number") {
+          placed = [data.lastMove.r, data.lastMove.c];
+          flipped = [];
+          for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 8; c++) {
+              if ((r !== placed[0] || c !== placed[1]) && cellAnim[r][c].color !== EMPTY && cellAnim[r][c].color !== data.board[r][c]) {
+                flipped.push([r, c]);
+              }
+            }
+          }
+        }
+        applyGameState(data, placed, flipped);
       }, (err) => {
         errEl.textContent = "DB読み込みエラー: " + err.message;
       });
